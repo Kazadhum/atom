@@ -1,6 +1,6 @@
 name: ci
 
-on: workflow_dispatch
+on: [push, workflow_dispatch]
 
 env:
   DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
