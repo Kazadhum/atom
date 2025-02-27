@@ -21,15 +21,6 @@ providers:
       username: "{{ vars.DOCKER_USERNAME }}"
       password: "{{ vars.DOCKER_PASSWORD }}"
   
-  # aws:
-    # provider: "rigel.providers.aws.AWSProvider"
-    # with:
-      # aws_access_key_id: "{{ vars.AWS_ACCESS_KEY_ID }}"
-      # aws_secret_access_key: "{{ vars.AWS_SECRET_ACCESS_KEY }}" 
-      # region_name: "{{ vars.AWS_REGION_NAME }}"
-      # ecr_servers:
-        # - "{{ vars.AWS_ECR }}"
-      # services: ["ecr", "robomaker"]
 
 application:
 
@@ -90,7 +81,7 @@ jobs:
         - "pip3 install gdown" # For downloading bag file
 
 
-        # Podes também criar um ficheiro .rosinstall com os gits publicos que precisas <--- recomendo isto
+        # Podes também criar um ficheiro .rosinstall com os gits publicos que precisas
         - "mkdir -p home/rigeluser/ros_workspace/src"
         - "cd home/rigeluser/ros_workspace/src"
         - "git clone https://github.com/miguelriemoliveira/rviz home/rigeluser/ros_workspace/src/rviz"
@@ -99,17 +90,14 @@ jobs:
         - "cd home/rigeluser/bagfiles/rrbot && gdown --id 1Noo3eZh72m-xRobYZywdo1wtqg7e4wGa" # Get RRBot test bag
 
 
-      # command: "bash -c 'source ~/ros_workspace/devel/setup.bash'" 
       entrypoint:
         - "if [[ -f \"/usr/share/$GAZEBO_VERSION/setup.sh\" ]]; then source /usr/share/$GAZEBO_VERSION/setup.sh; fi"
         - "export GAZEBO_RESOURCE_PATH=$GAZEBO_RESOURCE_PATH/usr/share/gazebo-11:"
         - "export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH/usr/share/gazebo-11/meshes:"
-        # - "export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:/home/rigeluser/ros_workspace/src/t2rgb/t2rgb_description/models:"
         - export WORKSPACE_INSTALL="home/rigeluser/ros_workspace/devel"
         - export ATOM_DATASETS="$HOME/ros_workspace/src/atom/ci_datasets"
         - export ROS_BAGS="/home/rigeluser/bagfiles"
         - source $WORKSPACE_INSTALL/setup.bash
-        # - rosrun rosbridge_server rosbridge_websocket & # Testing
         - "cd home/rigeluser/ros_workspace/src/atom/atom_examples"
         - "sudo chmod 777 -R ./"
         - "cd home/rigeluser/ros_workspace/src/atom/ci_datasets"
@@ -122,24 +110,13 @@ jobs:
       tags: ["{{ vars.distro }}"]
       load: False
       push: True
-      # platforms:
-      #   - "linux/amd64"
-      #   - "linux/arm64"
 
   calibrate_rrbot:
     plugin: "rigel.plugins.core.ComposePlugin"
     with:
       timeout: 300.0
       components:
-        # -
-        #   name: "simulation_and_robot"
-        #   image: "dvieira2001/atom:latest"
-        #   command: ["roslaunch", "t2rgb_bringup", "t2rgb.launch"]
-        #   envs:
-        #     DISPLAY: "{{ vars.DISPLAY }}"
-          
-          # volumes:
-          #   - !!python/tuple ["/tmp/.X11-unix", "/tmp/.X11-unix"]
+
         -
             name: "calibration_evaluation"
             image: "dvieira2001/atom:latest"
@@ -184,16 +161,7 @@ jobs:
     with:
       timeout: 300.0
       components:
-        # -
-        #   name: "simulation_and_robot"
-        #   image: "dvieira2001/atom:latest"
-        #   command: ["roslaunch", "t2rgb_bringup", "t2rgb.launch"]
-        #   envs:
-        #     DISPLAY: "{{ vars.DISPLAY }}"
-          
-          # volumes:
-          #   - !!python/tuple ["/tmp/.X11-unix", "/tmp/.X11-unix"]
-        -
+
             name: "calibration_evaluation"
             image: "dvieira2001/atom:latest"
 
@@ -227,51 +195,6 @@ jobs:
           volumes:
             - !!python/tuple ["/tmp/.X11-unix", "/tmp/.X11-unix"]
 
-        # -
-        #   name: "simapp"
-        #   image: "dvieira2001/atom:latest"
-        #   command: ["roslaunch", "t2rgb_bringup", "simapp_launch.launch", "motion_sequence_file:=/home/rigeluser/ros_workspace/src/t2rgb/movement_sequences/movement_sequence.json"]
-
-        #   # command: ["/bin/bash", "-c", "source /home/rigeluser/ros_workspace/devel/setup.bash && roslaunch t2rgb_bringup simapp_launch.launch motion_sequence_file:=/home/rigeluser/ros_workspace/src/t2rgb/movement_sequences/movement_sequence.json"]
-
-        #   envs:
-        #     DISPLAY: "{{ vars.DISPLAY }}"
-        #   volumes:
-        #       - !!python/tuple ["/tmp/.X11-unix", "/tmp/.X11-unix"]
-        #   devices:
-        #       - "/dev/dri:/dev/dri"
-
-        # -
-        #   name: "logger"
-        #   image: "dvieira2001/atom:latest"
-        #   command: ["rostopic", "echo", "/rosout"]
-
-        # -
-        #   name: "robotapp"
-        #   image: "dvieira2001/atom:latest"
-        #   command: ["roslaunch", "t2rgb_bringup", "robotapp_launch.launch", "output_folder:=/home/rigeluser/ros_workspace/src/t2rgb/datasets/t2rgb", "overwrite:=true"]
-
-        #   # command: ["/bin/bash", "-c", "source /home/rigeluser/ros_workspace/devel/setup.bash && roslaunch t2rgb_bringup robotapp_launch.launch output_folder:=/home/rigeluser/ros_workspace/src/t2rgb/datasets/t2rgb overwrite:=true"]
-
-
-        #   envs:
-        #     DISPLAY: "{{ vars.DISPLAY }}"
-        #   volumes:
-        #     - !!python/tuple ["/tmp/.X11-unix", "/tmp/.X11-unix"]
-        #   devices:
-        #     - "/dev/dri:/dev/dri"
-          
-        #   introspection: False
-
-  # test:
-  #   plugin: "rigel.plugins.core.TestPlugin"
-  #   with:
-  #     timeout: 30.0
-  #     requirements:
-  #       - 'globally: some /dummy_topic [std_msgs/String]'
-        # timeout: 30.0
-
-  
   introspection_rrbot:
     plugin: "file_intro_plugin.FileIntrospectionPlugin"
     with:
@@ -301,97 +224,6 @@ jobs:
       introspection_target_columns:
         # - "RMS (pix)"
         - "RMS (pix)": {validation_min: 0, validation_max: 5, use_latest_row: False, value_row: 'Averages', acceptable_min: 0, acceptable_max: 3} #Check for strings in result as well as numeric as well as a string's absence
-        
-  # robomaker:
-    # plugin: "rigel.plugins.aws.RoboMakerPlugin"
-    # with:
-      # iam_role: "{{ vars.AWS_IAM_ROLE }}"
-      # output_location: "rigel-robomaker-logs-ireland"
-      # simulation_duration: 600
-      # 
-      # robot_application:
-        # ecr: "{{ vars.AWS_ECR }}/atom_image:latest"
-        # command: ["roslaunch", "t2rgb_bringup", "robotapp_launch.launch", "output_folder:=$ATOM_DATASETS/t2rgb", "overwrite:=true"]
-        # 
-        # stream_ui: True
-# 
-        # environment:
-          # - "GAZEBO_MASTER_URI=http://ROBOMAKER_SIM_APP_IP:11345"
-          # - "ROS_IP=ROBOMAKER_ROBOT_APP_IP"
-          # - "ROS_MASTER_URI=http://localhost:11311"
-          # - "ROS_MASTER_URI=http://ROBOMAKER_ROBOT_APP_IP:11311"
-          # - "ROS_HOSTNAME=localhost"
-        # 
-# 
-# 
-        # ports:
-          # - !!python/tuple [9090, 9090]
-        # 
-        # tools:
-          # -
-            # name: 'terminal'
-            # command: "{{ vars.robomaker_tool_terminal_cmd }}"
-            # stream_output_to_cloud_watch: True
-            # stream_ui: True
-          # 
-          # -
-            # name: 'rviz'
-            # command: "{{ vars.robomaker_tool_rviz_cmd}}"
-            # stream_output_to_cloud_watch: True
-            # stream_ui: True
-          # 
-          # -
-            # name: 'gzclient'
-            # command: "{{ vars.robomaker_tool_gazebo_cmd}}"
-            # stream_output_to_cloud_watch: True
-            # stream_ui: True
-# 
-# 
-      # simulation_application:
-        # ecr: "{{ vars.AWS_ECR }}/atom_image:latest"
-        # command: ["roslaunch", "t2rgb_bringup", "simapp_launch.launch", "motion_sequence_file:=/home/rigeluser/ros_workspace/src/t2rgb/movement_sequences/movement_sequence.json"]
-# 
-        # stream_ui: True
-# 
-        # environment:
-          # - "GAZEBO_MASTER_URI=http://ROBOMAKER_SIM_APP_IP:11345"
-          # - "ROS_IP=ROBOMAKER_SIM_APP_IP"
-          # - "ROS_MASTER_URI=http://localhost:11311"
-          # - "ROS_MASTER_URI=http://ROBOMAKER_ROBOT_APP_IP:11311"
-          # - "ROS_HOSTNAME=localhost"
-# 
-        # ports:
-          # - !!python/tuple [9090, 9090]
-# 
-        # tools:
-          # -
-            # name: 'terminal'
-            # command: "{{ vars.robomaker_tool_terminal_cmd }}"
-            # stream_output_to_cloud_watch: True
-            # stream_ui: True
-          # 
-          # -
-            # name: 'rviz'
-            # command: "{{ vars.robomaker_tool_rviz_cmd}}"
-            # stream_output_to_cloud_watch: True
-            # stream_ui: True
-# 
-          # -
-            # name: 'gzclient'
-            # command: "{{ vars.robomaker_tool_gazebo_cmd}}"
-            # stream_output_to_cloud_watch: True
-            # stream_ui: True
-# 
-      # 
-# 
-      # vpc_config:
-        # subnets:
-          # - "subnet-0fd55ce2c4695d46f"
-          # - "subnet-0dd12d06c4a7e3d90"
-        # security_groups:
-          # - "sg-0a12d8bb70b2bf1f4"
-        # assign_public_ip: True
-
 
 sequences:
   deploy:
@@ -432,44 +264,3 @@ sequences:
           -
             jobs: ["calibrate_rlbot", "introspection_rlbot"]
  
-  
-  # SEQUENCES FOR PARTIAL TESTING
-  
-  # RRBOT
-  test_rrbot_calibration_one_noise_pair:
-    stages:
-      -
-        matrix:
-          trans_noise: [0]
-          rot_noise: [0]
-
-        parallel:
-          -
-            jobs: ["calibrate_rrbot", "introspection_rrbot"]
-
-  test_rrbot_calibration_two_noise_pairs: 
-    stages:
-      -
-        matrix:
-          trans_noise: [0]
-          rot_noise: [0, 0.5]
-          # trans_noise: [0]
-          # rot_noise: [0]
-
-        parallel:
-          -
-            jobs: ["calibrate_rrbot", "introspection_rrbot"]
-
-  test_rrbot_calibration_four_noise_pairs: 
-    stages:
-      -
-        matrix:
-          trans_noise: [0, 0.5]
-          rot_noise: [0, 0.5]
-          # trans_noise: [0]
-          # rot_noise: [0]
-
-        parallel:
-          -
-            jobs: ["calibrate_rrbot", "introspection_rrbot"]
-
